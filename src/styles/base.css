@@ -1,0 +1,2177 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ink);
+  color: var(--cloth);
+  font-family: var(--font-label);
+  scroll-behavior: auto;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--ink);
+  transition: color 300ms var(--ease-in);
+}
+
+html.is-preloading,
+body.is-preloading {
+  overflow: hidden;
+}
+
+.preloader {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--cloth);
+  opacity: 1;
+  transition: opacity 320ms var(--ease-out);
+}
+
+.preloader.is-complete {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preloader__thread {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 24px;
+  height: 100%;
+  overflow: visible;
+  transform: translateX(-50%);
+}
+
+.preloader__thread path {
+  stroke: var(--red);
+  stroke-linecap: round;
+  stroke-width: 1.5px;
+}
+
+.preloader__counter {
+  position: absolute;
+  top: calc(var(--preloader-progress, 0) * (100% - 72px) + 36px);
+  left: calc(50% + 22px);
+  min-width: 9ch;
+  color: var(--cloth);
+  font-variant-numeric: tabular-nums;
+  transition: top 120ms linear;
+}
+
+.preloader__label {
+  position: absolute;
+  right: 32px;
+  bottom: 28px;
+  color: var(--red);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+.text-reveal__measure {
+  display: inline;
+}
+
+.text-reveal__measure > span {
+  display: inline;
+}
+
+.text-reveal__line {
+  display: block;
+  overflow: hidden;
+  clip-path: inset(0);
+}
+
+.text-reveal__line-inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+#exhibition {
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 900px) {
+  #exhibition {
+    --thread-nav-content-clearance: 76px;
+  }
+}
+
+.chapter {
+  position: relative;
+  height: calc(var(--chapter-scroll-vh) * 1vh);
+  min-height: 100vh;
+}
+
+.chapter__surface {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: transparent;
+}
+
+.lattice {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+  color: var(--cloth);
+  opacity: 0.03;
+}
+
+body.is-light-ground .lattice {
+  color: var(--black);
+  opacity: 0.02;
+}
+
+.grain {
+  position: fixed;
+  z-index: 40;
+  inset: -25%;
+  pointer-events: none;
+  background-image: url('/assets/noise.png');
+  background-position: 0 0;
+  background-repeat: repeat;
+  mix-blend-mode: overlay;
+  opacity: 0.04;
+  animation: grain-flicker 375ms steps(3, end) infinite;
+}
+
+body.is-light-ground .grain {
+  opacity: 0.02;
+}
+
+@keyframes grain-flicker {
+  0% {
+    background-position: 0 0;
+  }
+
+  33.333% {
+    background-position: 19px -31px;
+  }
+
+  66.666% {
+    background-position: -27px 13px;
+  }
+
+  100% {
+    background-position: 7px 29px;
+  }
+}
+
+.chapter-top-occlusion {
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 96px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chapter-top-occlusion--ink {
+  background: linear-gradient(
+    180deg,
+    rgba(11, 11, 12, 1) 0px,
+    rgba(11, 11, 12, 1) 58px,
+    rgba(11, 11, 12, 0.88) 70px,
+    rgba(11, 11, 12, 0.46) 82px,
+    rgba(11, 11, 12, 0) 96px
+  );
+}
+
+.chapter-top-occlusion--cloth {
+  background: linear-gradient(
+    180deg,
+    rgba(228, 218, 198, 1) 0px,
+    rgba(228, 218, 198, 1) 58px,
+    rgba(228, 218, 198, 0.88) 70px,
+    rgba(228, 218, 198, 0.46) 82px,
+    rgba(228, 218, 198, 0) 96px
+  );
+}
+
+.thread-nav {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* One shared navigation-protection surface. Its tone (--thread-nav-surface-rgb)
+   is interpolated directly on this single element alongside the existing
+   background-bleed timeline in main.ts, so there is never a second
+   overlapping scrim to crossfade against and never a muddy double-opacity
+   band during a tone transition. */
+.thread-nav__scrim {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: 96px;
+  pointer-events: none;
+  transform: translateX(-50%);
+  background-color: rgb(
+    var(--thread-nav-surface-rgb, 11 11 12) / var(--thread-nav-surface-opacity, 0.88)
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 0px,
+    #000 56px,
+    rgba(0, 0, 0, 0.7) 72px,
+    rgba(0, 0, 0, 0) 96px
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #000 0px,
+    #000 56px,
+    rgba(0, 0, 0, 0.7) 72px,
+    rgba(0, 0, 0, 0) 96px
+  );
+}
+
+.thread-nav__svg {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.thread-nav__path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.thread-nav__path--navbar {
+  opacity: 1;
+  stroke: #c4122f;
+  stroke-width: 1.5px;
+}
+
+/* Fixed at all times — never chapter-dependent, never animated. A
+   varying width here previously read as the thread intermittently
+   "thickening" at chapter transitions. */
+.thread-nav__path--progress {
+  stroke-width: 1.5px;
+}
+
+.thread-nav__path--main {
+  stroke: #c4122f;
+}
+
+.thread-nav__path--shadow {
+  stroke: color-mix(in srgb, var(--red) 70%, var(--black));
+  opacity: var(--thread-shadow-opacity, 0.15);
+}
+
+.thread-nav__knot {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.thread-nav__knot-hit {
+  fill: transparent;
+  pointer-events: all;
+  stroke: transparent;
+  stroke-width: 1px;
+}
+
+.thread-nav__knot-geometry {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 300ms var(--ease-in),
+    transform 300ms var(--ease-in);
+}
+
+.thread-nav__knot-loop,
+.thread-nav__knot-pass {
+  fill: none;
+  stroke: var(--red);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5px;
+}
+
+.thread-nav__knot-centre {
+  fill: var(--red);
+  opacity: 0.5;
+  transition: opacity 300ms var(--ease-in);
+}
+
+.thread-nav__knot.is-upcoming .thread-nav__knot-geometry {
+  opacity: 0.45;
+  transform: scale(1.1538, 1.1111);
+}
+
+.thread-nav__knot.is-upcoming .thread-nav__knot-centre {
+  opacity: 0;
+}
+
+.thread-nav__knot.is-passed .thread-nav__knot-geometry {
+  opacity: 1;
+}
+
+.thread-nav__knot.is-passed .thread-nav__knot-centre {
+  opacity: 0.5;
+}
+
+.thread-nav__knot-label {
+  /* Protection against a busy ground comes from a crisp opposite-tone
+     stroke (the same colour as the nav surface itself), not a blurred
+     text-shadow glow — --thread-nav-surface-rgb/--thread-nav-label-rgb
+     are interpolated together in main.ts, so fill and stroke always
+     pair correctly and never hard-switch. */
+  fill: rgb(var(--thread-nav-label-rgb, 240 232 216));
+  stroke: rgb(var(--thread-nav-surface-rgb, 11 11 12));
+  stroke-width: 1px;
+  paint-order: stroke fill;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  opacity: 1;
+  pointer-events: none;
+  text-anchor: middle;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity 300ms var(--ease-in);
+}
+
+.thread-nav__knot:hover .thread-nav__knot-geometry {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.thread-nav__knot:focus-visible .thread-nav__knot-geometry {
+  opacity: 1;
+  transform: scale(1.3077, 1.3333);
+}
+
+.thread-nav__knot:hover .thread-nav__knot-centre,
+.thread-nav__knot:focus-visible .thread-nav__knot-centre {
+  opacity: 1;
+}
+
+.thread-nav__knot:hover .thread-nav__knot-label,
+.thread-nav__knot:focus-visible .thread-nav__knot-label {
+  fill: rgb(var(--thread-nav-label-rgb, 240 232 216));
+  opacity: 1;
+}
+
+.thread-nav__knot.is-current .thread-nav__knot-label {
+  fill: rgb(var(--thread-nav-label-rgb, 240 232 216));
+  font-weight: 600;
+  opacity: 1;
+}
+
+.thread-nav__knot:focus {
+  outline: none;
+}
+
+.thread-nav__knot:focus-visible {
+  outline: 2px solid #c4122f;
+  outline-offset: 4px;
+}
+
+.thread-nav__counter {
+  position: absolute;
+  z-index: 1;
+  top: var(--thread-tip-y, 48px);
+  right: 40px;
+  min-width: calc(var(--cell) * 4);
+  padding-right: 24px;
+  transform: translateY(-50%);
+  color: var(--thread-label-color, var(--cloth));
+  opacity: 0;
+  pointer-events: none;
+  text-align: right;
+  transition: opacity 180ms linear;
+  will-change: opacity, top;
+}
+
+@media (min-width: 1200px) {
+  .thread-nav__knot-label {
+    font-size: 12px;
+    letter-spacing: 0.11em;
+  }
+}
+
+.thread-nav__counter-value {
+  display: block;
+  opacity: var(--thread-label-opacity, 0.8);
+  text-shadow: 0 1px 6px rgba(11, 11, 12, 0.7);
+}
+
+.thread-nav__counter-label {
+  position: absolute;
+  right: 24px;
+  bottom: 100%;
+  display: block;
+  margin-bottom: 6px;
+  color: inherit;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  opacity: var(--thread-label-opacity, 0.8);
+  pointer-events: none;
+  text-align: right;
+  text-shadow: 0 1px 6px rgba(11, 11, 12, 0.7);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+body.is-light-ground .thread-nav__counter-value,
+body.is-light-ground .thread-nav__counter-label {
+  text-shadow: 0 1px 6px rgba(240, 232, 216, 0.85);
+}
+
+.thread-nav__counter.is-at-end {
+  transform: translateY(-100%);
+}
+
+/* Knot emphasis only — the idle pulse must never touch the thread paths
+   themselves (previously `.thread-nav__path--progress` shared this
+   selector, which meant the shadow path's own resting opacity of ~0.15
+   was pulled up to the keyframe's 1/0.35/1 values, reading as the
+   scarlet line briefly glowing/thickening). */
+.thread-nav.is-idle-pulse .thread-nav__knot-geometry {
+  animation: thread-idle-pulse 1.8s var(--ease-in) 1;
+}
+
+.chapter[data-chapter='grid'] .chapter__surface {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 900px) {
+  .chapter[data-chapter='grid'] .chapter__surface {
+    align-items: flex-start;
+    padding-top: calc(var(--thread-nav-content-clearance) + 12px);
+  }
+}
+
+.grid-engine {
+  display: grid;
+  grid-template-columns: 900px 240px;
+  gap: calc(var(--cell) * 2);
+  align-items: start;
+  width: 1184px;
+  color: var(--black);
+}
+
+.grid-engine__canvas-shell {
+  position: relative;
+  width: 900px;
+  height: auto;
+  box-shadow: 0 18px 70px rgba(21, 19, 19, 0.08);
+}
+
+.grid-engine__canvas {
+  display: block;
+  width: 900px;
+  height: 640px;
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 4 C8 2 10 8 14 6 C17 4 18 7 21 9' fill='none' stroke='%23C4122F' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='3' cy='4' r='1.5' fill='%23C4122F'/%3E%3C/svg%3E")
+      3 4,
+    crosshair;
+  touch-action: none;
+}
+
+.grid-engine__readout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+  gap: 18px;
+  width: 100%;
+  padding: 10px 14px 12px;
+  background: color-mix(in srgb, var(--cloth-lit) 94%, transparent);
+  color: var(--black);
+  font-size: 9.5px;
+  line-height: 1.28;
+  pointer-events: none;
+}
+
+.grid-engine__readout-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-content: start;
+}
+
+.grid-engine__readout-item > span {
+  letter-spacing: 0.08em;
+}
+
+.grid-engine__readout-item > strong {
+  font-weight: 400;
+  text-align: right;
+}
+
+.grid-engine__readout-item p,
+.grid-engine__definitions {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.grid-engine__definitions {
+  padding: 0;
+  list-style: none;
+}
+
+.grid-engine__readout-item p + p,
+.grid-engine__definitions,
+.grid-engine__definitions + p {
+  margin-top: 3px;
+}
+
+.grid-engine__rail {
+  display: flex;
+  min-height: 640px;
+  flex-direction: column;
+  padding: calc(var(--cell) * 2) 0 0;
+  border-top: 0.5px solid color-mix(in srgb, var(--black) 20%, transparent);
+}
+
+.grid-engine__eyebrow {
+  margin: 0 0 18px;
+  color: var(--red);
+}
+
+.grid-engine__instruction {
+  max-width: 25ch;
+  margin: 0 0 calc(var(--cell) * 2);
+  color: color-mix(in srgb, var(--black) 72%, transparent);
+  line-height: 1.65;
+}
+
+.grid-engine__control-label {
+  margin: 0 0 12px;
+}
+
+.grid-engine__swatches {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.grid-engine__swatch,
+.grid-engine__button {
+  appearance: none;
+  border: 0;
+  border-radius: 0;
+  color: var(--black);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.grid-engine__swatch {
+  position: relative;
+  min-height: 52px;
+  padding: 30px 8px 7px;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+}
+
+.grid-engine__swatch::before {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  width: 18px;
+  height: 18px;
+  content: '';
+}
+
+.grid-engine__swatch--red::before {
+  background: var(--red);
+}
+
+.grid-engine__swatch--black::before {
+  background: var(--black);
+}
+
+.grid-engine__swatch[aria-pressed='true'] {
+  border-bottom-color: var(--red);
+}
+
+.grid-engine__button {
+  min-height: 48px;
+  padding: 0;
+  background: transparent;
+  border-top: 0.5px solid color-mix(in srgb, var(--black) 22%, transparent);
+}
+
+.grid-engine__button::after {
+  float: right;
+  color: var(--red);
+  content: '↗';
+}
+
+.grid-engine__button[aria-pressed='true']::after {
+  content: '●';
+}
+
+.grid-engine__button:hover,
+.grid-engine__button:focus-visible,
+.grid-engine__swatch:hover,
+.grid-engine__swatch:focus-visible {
+  color: var(--red);
+}
+
+.grid-engine__button:focus,
+.grid-engine__swatch:focus {
+  outline: none;
+}
+
+.grid-engine__button:focus-visible,
+.grid-engine__swatch:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--red) 60%, transparent);
+  outline-offset: 4px;
+}
+
+@keyframes thread-idle-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .grain {
+    display: none;
+  }
+
+  .thread-nav__knot-geometry,
+  .thread-nav__knot-centre,
+  .thread-nav__knot-label {
+    transition: none;
+  }
+}
+
+.sequence-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.drift-plate {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+img.is-missing {
+  opacity: 0 !important;
+}
+
+.hero {
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.hero__canvas {
+  z-index: 0;
+}
+
+.hero__title-wrap {
+  position: absolute;
+  z-index: 2;
+  bottom: 84px;
+  left: 32px;
+  width: 560px;
+  max-width: calc(100vw - 64px);
+  isolation: isolate;
+  transform-origin: left bottom;
+  will-change: transform;
+}
+
+.hero__protection {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 70% 52% at 27% 70%,
+    rgba(11, 11, 12, 0.8) 0%,
+    rgba(11, 11, 12, 0.6) 31%,
+    rgba(11, 11, 12, 0.32) 50%,
+    rgba(11, 11, 12, 0.12) 64%,
+    rgba(11, 11, 12, 0) 82%
+  );
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.hero__title {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 0;
+  color: var(--cloth);
+  font-family: var(--font-display);
+  font-variation-settings:
+    'WONK' 1,
+    'SOFT' 40;
+  font-weight: 300;
+}
+
+.hero__title-line {
+  display: block;
+  overflow: hidden;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.42);
+  white-space: nowrap;
+}
+
+.hero__title-line-inner {
+  display: block;
+  will-change: transform;
+}
+
+.hero__title-line--descriptor {
+  margin-bottom: 34px;
+  color: rgba(240, 232, 216, 0.82);
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.hero__title-line--puhoor {
+  color: #c4122f;
+  font-size: 80px;
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+}
+
+.hero__title-guide {
+  position: absolute;
+  z-index: 2;
+  top: 32px;
+  left: 0;
+  display: block;
+  width: 96px;
+  height: 3px;
+  pointer-events: none;
+}
+
+.hero__title-guide-line {
+  position: absolute;
+  top: 0.75px;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 1.5px;
+  background: #c4122f;
+  will-change: clip-path;
+}
+
+.hero__title-guide-knot {
+  position: absolute;
+  top: 0;
+  right: -1.5px;
+  display: block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #c4122f;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.hero__threshold {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 22vh;
+  background: linear-gradient(
+    to top,
+    rgba(11, 11, 12, 0.96) 0%,
+    rgba(11, 11, 12, 0.72) 45%,
+    rgba(11, 11, 12, 0) 100%
+  );
+  pointer-events: none;
+  transform: scaleY(0);
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+.hero__correction {
+  position: absolute;
+  z-index: 2;
+  /* Anchored to the nav clearance, not the vertical centre: the sequence
+     canvas behind it is a continuous pull-back shot, and this is the one
+     band confirmed (via pixel sampling across the caption's own visible
+     window, progress 0.72-0.90) to stay clear of the cloth throughout —
+     a mid-height position sits under the cloth for most of that range. */
+  top: calc(var(--thread-nav-content-clearance, 76px) + 34px);
+  left: max(32px, calc((100vw - 1320px) / 2));
+  width: min(42vw, 560px);
+  margin: 0;
+  color: var(--cloth);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.09em;
+  line-height: 1.45;
+  opacity: 0;
+}
+
+.hero__scroll-cue {
+  position: absolute;
+  z-index: 2;
+  right: 32px;
+  bottom: 30px;
+  left: auto;
+  display: flex;
+  width: 150px;
+  flex-direction: column;
+  align-items: center;
+  opacity: 1;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.hero__scroll-cue::before {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: 150px;
+  height: 128px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(11, 11, 12, 0.68) 0%,
+    rgba(11, 11, 12, 0.34) 48%,
+    rgba(11, 11, 12, 0) 78%
+  );
+  content: '';
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.hero__scroll-label {
+  position: relative;
+  display: block;
+  color: #f0e8d8;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-shadow: 0 1px 7px rgba(0, 0, 0, 0.9);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hero__scroll-track {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 52px;
+  margin-top: 10px;
+  background: rgba(240, 232, 216, 0.38);
+}
+
+.hero__scroll-indicator {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: block;
+  width: 3px;
+  height: 12px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: #c4122f;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+@media (min-width: 1200px) {
+  .hero__scroll-cue {
+    right: 60px;
+    bottom: 36px;
+  }
+
+  .hero__title-wrap {
+    bottom: clamp(76px, 10.667vh, 96px);
+    left: 60px;
+    width: 760px;
+    max-width: calc(100vw - 120px);
+  }
+
+  .hero__protection {
+    background: radial-gradient(
+      ellipse 58% 54% at 24% 74%,
+      rgba(11, 11, 12, 0.8) 0%,
+      rgba(11, 11, 12, 0.62) 30%,
+      rgba(11, 11, 12, 0.34) 49%,
+      rgba(11, 11, 12, 0.14) 63%,
+      rgba(11, 11, 12, 0) 80%
+    );
+  }
+
+  .hero__title-line--descriptor {
+    margin-bottom: 38px;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+  }
+
+  .hero__title-line--puhoor {
+    font-size: 112px;
+    line-height: 0.86;
+  }
+
+  .hero__title-guide {
+    top: 35px;
+    width: 132px;
+  }
+}
+
+.about {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0 24px;
+  align-items: center;
+  overflow: visible;
+  padding: 84px max(32px, calc((100vw - 1320px) / 2));
+  background: var(--ink);
+}
+
+.about__copy {
+  --warp-open: 0px;
+  grid-column: 2 / span 5;
+  color: var(--cloth);
+  mask-image: repeating-linear-gradient(
+    90deg,
+    #000 0 var(--warp-open),
+    transparent var(--warp-open) var(--cell)
+  );
+}
+
+.about__eyebrow {
+  margin: 0 0 24px;
+  color: var(--red);
+}
+
+.about__heading {
+  max-width: 10ch;
+  margin: 0 0 30px;
+}
+
+.about__body {
+  margin: 0;
+  color: color-mix(in srgb, var(--cloth) 78%, transparent);
+}
+
+.about__paragraph {
+  text-wrap: pretty;
+}
+
+.about__paragraph:nth-child(4) {
+  max-width: 500px;
+}
+
+.about__plates {
+  position: relative;
+  grid-column: 8 / span 5;
+  height: 68vh;
+  min-height: 0;
+}
+
+.about__plate {
+  position: absolute;
+  display: block;
+  width: min(30vw, 410px);
+  height: min(48vh, 570px);
+  object-fit: cover;
+  background: var(--black);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.about__plate--cloth {
+  top: 0;
+  left: 0;
+}
+
+.about__plate--folds {
+  right: 0;
+  bottom: 0;
+  width: min(24vw, 330px);
+  height: min(36vh, 430px);
+}
+
+.construction {
+  overflow: hidden;
+  background: var(--ink);
+  perspective: 1600px;
+}
+
+.construction__stage {
+  position: absolute;
+  inset: 0;
+}
+
+.construction__header,
+.construction__body {
+  position: absolute;
+  z-index: 6;
+  left: max(32px, calc((100vw - 1320px) / 2));
+  color: var(--cloth);
+}
+
+.construction__header {
+  top: 120px;
+  width: min(424px, calc((100vw - 112px) / 3));
+}
+
+.construction__eyebrow {
+  margin: 0 0 18px;
+  color: var(--red);
+}
+
+.construction__heading {
+  max-width: 10ch;
+  margin: 0;
+}
+
+.construction__body {
+  top: 50%;
+  width: 300px;
+  max-width: 300px;
+  opacity: 0;
+  transform: translateY(-50%);
+}
+
+.construction__body-paragraph {
+  margin: 0 0 16px;
+  color: color-mix(in srgb, var(--cloth) 78%, transparent);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.construction__body-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.construction__cloth {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: min(720px, 62vw);
+  aspect-ratio: 4 / 5;
+  max-height: 78vh;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  perspective: 1400px;
+}
+
+.construction__plane {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.construction__cloth-overlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.construction__face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(color-mix(in srgb, var(--cloth) 9%, transparent), transparent),
+    var(--black);
+  backface-visibility: hidden;
+}
+
+.construction__face--back {
+  transform: rotateX(180deg);
+}
+
+.construction__image,
+.construction__macro {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.construction__notes {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* One shared editorial annotation style: margin-set labels with a thin
+   scarlet leader toward the cloth, a subordinate index number, and a
+   restrained local backing instead of a filled rectangle. */
+.construction__note {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 240px;
+}
+
+.construction__note:nth-child(even) {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.construction__note--1 {
+  top: 44%;
+  left: max(32px, calc((100vw - 1320px) / 2 + 20px));
+}
+
+.construction__note--2 {
+  top: 32%;
+  right: max(32px, calc((100vw - 1320px) / 2 + 20px));
+}
+
+.construction__note--3 {
+  top: 64%;
+  left: max(32px, calc((100vw - 1320px) / 2 + 20px));
+}
+
+.construction__note--4 {
+  top: 72%;
+  right: max(32px, calc((100vw - 1320px) / 2 + 20px));
+}
+
+.construction__note-index {
+  flex-shrink: 0;
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  opacity: 0.65;
+}
+
+.construction__note-label {
+  padding: 5px 7px;
+  background: rgba(11, 11, 12, 0.78);
+  color: #f0e8d8;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.construction__note-leader {
+  display: block;
+  flex-shrink: 0;
+  width: 64px;
+  height: 1px;
+  background: var(--red);
+  opacity: 0.9;
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .construction__note {
+    max-width: 180px;
+  }
+
+  .construction__note-leader {
+    width: 28px;
+  }
+
+  .construction__note--1,
+  .construction__note--3 {
+    left: 24px;
+  }
+
+  .construction__note--2,
+  .construction__note--4 {
+    right: 24px;
+  }
+}
+
+.construction__pull {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  right: auto;
+  left: max(
+    28px,
+    calc(50% - min(720px, 62vw) / 2 - 332px)
+  );
+  width: min(300px, 24vw);
+  max-width: 300px;
+  margin: 0;
+  color: var(--cloth);
+  opacity: 1;
+}
+
+@media (min-width: 1200px) {
+  .construction__pull {
+    top: auto;
+    bottom: 60px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .construction__heading {
+    max-width: 160px;
+    font-size: 40px;
+    line-height: 1.02;
+  }
+
+  .construction__pull {
+    top: auto;
+    bottom: 2px;
+    left: 32px;
+    width: 280px;
+    max-width: 280px;
+    font-size: 26px;
+    line-height: 1.18;
+  }
+
+  .construction__body {
+    top: 188px;
+    left: 32px;
+    width: 220px;
+    max-width: 220px;
+    transform: none;
+  }
+
+  .construction__body-paragraph {
+    font-size: 16px;
+    line-height: 1.55;
+  }
+}
+
+.construction__macro {
+  position: absolute;
+  z-index: 5;
+  top: 10vh;
+  right: 0;
+  width: min(48vw, 720px);
+  height: 80vh;
+  background: var(--black);
+  opacity: 0;
+}
+
+.motifs {
+  --motif-image-size: clamp(156px, 20vh, 204px);
+  position: relative;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  padding: calc(var(--thread-nav-content-clearance, 76px) + 32px) 60px 28px;
+  background: var(--cloth);
+  color: var(--black);
+}
+
+.motifs__stack {
+  position: relative;
+}
+
+.motifs__intro {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  column-gap: 24px;
+  align-items: baseline;
+  margin-bottom: 24px;
+}
+
+.motifs__eyebrow {
+  color: var(--red);
+}
+
+.motifs__heading {
+  grid-column: 2;
+  max-width: none;
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+  justify-self: center;
+}
+
+.motifs__grid {
+  display: grid;
+  position: relative;
+  grid-template-columns: repeat(3, var(--motif-image-size));
+  gap: 34px 32px;
+  justify-content: center;
+}
+
+.motifs__plate {
+  width: var(--motif-image-size);
+  margin: 0;
+  transition: opacity 300ms var(--ease-in);
+}
+
+.motifs__image-shell {
+  position: relative;
+  width: var(--motif-image-size);
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--cloth-lit);
+}
+
+.motifs__image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.motifs__draw {
+  position: absolute;
+  z-index: 2;
+  inset: 11%;
+  display: block;
+  width: 78%;
+  height: 78%;
+  pointer-events: none;
+}
+
+/* Resting state for every stitch unit before its own card's draw tween
+   first reaches it. Without this, an unanimated SVG rect sits at the
+   browser default (opacity 1), which — composited through the plate's
+   own "upcoming" opacity — reads at the same visible strength as the
+   raster photo beneath it: a full second motif, not a quiet trace. */
+.motif-unit-svg rect {
+  opacity: 0;
+}
+
+.motifs__caption {
+  display: grid;
+  gap: 6px;
+  padding-top: 8px;
+}
+
+.motifs__caption strong {
+  font-weight: 400;
+}
+
+.motifs__caption span {
+  max-width: 31ch;
+  color: color-mix(in srgb, var(--black) 72%, transparent);
+  line-height: 1.45;
+}
+
+.motifs__local-name {
+  color: var(--red) !important;
+  font-size: 10px;
+  line-height: 1.2 !important;
+}
+
+.motifs__continuation {
+  position: absolute;
+  z-index: 3;
+  margin: 0;
+  color: var(--red);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.motifs__footer {
+  max-width: 640px;
+  margin: 24px auto 0;
+  text-align: left;
+}
+
+/* No sibling-dimming on hover/focus — once a card is revealed it stays
+   at full opacity regardless of which other card is active; only the
+   hovered/focused card itself gets an emphasis, via a small transform
+   on its own image (well under the 1.01 scale ceiling elsewhere is
+   fine here since this is a discrete, non-scroll-scrubbed interaction
+   state, not part of the reveal choreography). */
+.motifs__plate:hover .motifs__image,
+.motifs__plate:focus-within .motifs__image {
+  transform: translate3d(4px, -6px, 0) scale(1.015);
+}
+
+.nilgiris {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #0b0b0c;
+}
+
+.nilgiris__stage {
+  position: absolute;
+  inset: 0;
+}
+
+.nilgiris__canvas-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transform-origin: 50% 50%;
+}
+
+.nilgiris__canvas {
+  filter: saturate(0.72) contrast(0.94);
+}
+
+/* One full-surface atmospheric layer instead of a boxed panel behind the
+   copy — no fixed width/height, no border, no straight visible edge, no
+   blur/shadow. It sits above the sequence and below the copy across the
+   whole stage, and never moves with the paragraphs (those animate only
+   within their own wrapper). */
+.nilgiris__protection {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(11, 11, 12, 0.76) 0%,
+    rgba(11, 11, 12, 0.56) 22%,
+    rgba(11, 11, 12, 0.3) 42%,
+    rgba(11, 11, 12, 0.1) 58%,
+    rgba(11, 11, 12, 0) 72%
+  );
+}
+
+.nilgiris__copy {
+  position: absolute;
+  z-index: 2;
+  bottom: 12vh;
+  left: clamp(52px, 5vw, 84px);
+  max-width: 560px;
+  margin: 0;
+  color: var(--cloth-lit);
+  line-height: 1.45;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.52);
+}
+
+.artisans {
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--cloth);
+}
+
+.artisans__stage {
+  position: absolute;
+  inset: 0;
+}
+
+.artisans__header {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--thread-nav-content-clearance, 76px) + 60px);
+  left: max(32px, calc((100vw - 1320px) / 2));
+  width: 340px;
+}
+
+.artisans__eyebrow {
+  margin: 0 0 18px;
+  color: var(--red);
+}
+
+.artisans__heading {
+  max-width: 340px;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.artisans__name {
+  margin: 14px 0 0;
+  color: var(--red);
+}
+
+.artisans__attribution {
+  margin: 8px 0 0;
+  color: var(--cloth);
+}
+
+.artisans__zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+.artisans__track {
+  position: relative;
+  left: 50%;
+  display: grid;
+  width: 744px;
+  grid-template-columns: repeat(2, 340px);
+  gap: 124px 64px;
+  transform: translateX(-50%);
+}
+
+.artisans__plate {
+  width: 340px;
+  margin: 0;
+}
+
+.artisans__image {
+  display: block;
+  width: 340px;
+  height: 454px;
+  object-fit: cover;
+  background: var(--black);
+  transition:
+    filter 300ms var(--ease-in),
+    transform 8s var(--ease-in);
+}
+
+.artisans__caption {
+  width: 340px;
+  max-width: 340px;
+  margin: 12px 0 0;
+  color: var(--cloth);
+  font-size: 26px;
+  line-height: 1.18;
+  text-wrap: pretty;
+}
+
+.artisans__closing {
+  position: absolute;
+  right: 32px;
+  bottom: 36px;
+  left: 32px;
+  width: min(760px, calc(100vw - 64px));
+  margin: 0 auto;
+  color: var(--cloth);
+  opacity: 0;
+  text-align: center;
+}
+
+.artisans__plate:hover .artisans__image {
+  filter: brightness(1.08);
+  transform: translate3d(5px, -8px, 0);
+}
+
+.closing {
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.closing__red-ground {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: var(--red-cloth);
+  opacity: 0;
+}
+
+.closing__red-ground-texture {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.closing__canvas {
+  z-index: 1;
+}
+
+.closing__thesis {
+  position: absolute;
+  z-index: 2;
+  top: 80px;
+  left: max(32px, calc((100vw - 1320px) / 2));
+  width: min(760px, calc(100vw - 64px));
+  margin: 0;
+  opacity: 0;
+  text-align: left;
+  transform: none;
+}
+
+.closing__thesis-line {
+  margin: 0;
+  text-wrap: balance;
+}
+
+.closing__thesis-line--1 {
+  color: var(--cloth-lit);
+  font-family: var(--font-display);
+  font-size: 58px;
+  font-weight: 400;
+  line-height: 1.02;
+}
+
+.closing__thesis-line--2 {
+  margin-top: 6px;
+  color: var(--red);
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1.12;
+}
+
+.closing__credits {
+  position: absolute;
+  z-index: 3;
+  /* top-anchored with no explicit bottom/height: a definite height here
+     forces CSS multi-column layout to add extra columns (bleeding past
+     the viewport) rather than growing taller, once content doesn't fit
+     in the given space. Auto height lets column-fill:balance distribute
+     content across exactly column-count columns instead. */
+  top: 0;
+  right: 0;
+  left: 0;
+  display: block;
+  box-sizing: border-box;
+  /* 900-1199px (the 900px+ desktop floor — narrower widths use the
+     separate mobile fallback entirely): shell inset 32px each side from
+     the viewport, plus its own 32px/36px internal padding, so text never
+     sits directly against the red field's own edge. */
+  width: calc(100vw - 64px);
+  margin-inline: auto;
+  padding: calc(var(--thread-nav-content-clearance, 76px) + 36px) 32px 36px;
+  column-count: 3;
+  column-gap: 28px;
+  background: var(--red-cloth);
+  color: var(--cloth);
+  opacity: 0;
+  overflow: visible;
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .closing__credits {
+    width: calc(100vw - 96px);
+    padding: calc(var(--thread-nav-content-clearance, 76px) + 48px) 48px 48px;
+    column-gap: 40px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .closing__credits {
+    width: calc(100vw - 128px);
+    max-width: 1512px;
+    padding: calc(var(--thread-nav-content-clearance, 76px) + 52px) 56px 52px;
+    column-gap: 48px;
+  }
+}
+
+.closing__credit-group {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.25;
+  break-inside: avoid;
+}
+
+.closing__credit-group .type-label {
+  margin: 0 0 6px;
+  color: var(--black);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.closing__credit-group p {
+  margin: 0 0 5px;
+}
+
+.closing__credit-group p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 1100px) {
+  .type-hero {
+    font-size: clamp(48px, 9vw, 76px);
+  }
+
+  .about {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .about__copy {
+    grid-column: 1 / span 3;
+  }
+
+  .about__plates {
+    grid-column: 4 / span 3;
+  }
+
+  .construction__cloth {
+    width: min(440px, 54vw);
+  }
+
+  .construction__header {
+    width: min(32vw, 320px);
+  }
+
+  .motifs__grid {
+    grid-template-columns: repeat(3, var(--motif-image-size));
+    gap: 34px 32px;
+  }
+
+  .grid-engine {
+    width: calc(100vw - 32px);
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 24px;
+  }
+
+  .grid-engine__canvas-shell,
+  .grid-engine__canvas {
+    width: 100%;
+    height: auto;
+  }
+
+  .grid-engine__rail {
+    min-height: 0;
+    padding-top: 18px;
+  }
+
+  .artisans__track {
+    width: 660px;
+    grid-template-columns: repeat(2, 300px);
+    gap: 124px 60px;
+  }
+
+  .artisans__plate,
+  .artisans__image {
+    width: 300px;
+  }
+
+  .artisans__image {
+    height: 400px;
+  }
+
+  .artisans__plate--1,
+  .artisans__plate--3 {
+    grid-column: 1;
+  }
+
+  .artisans__plate--2,
+  .artisans__plate--4 {
+    grid-column: 2;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .motifs {
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+
+  .artisans__header {
+    width: 300px;
+  }
+
+  .artisans__caption {
+    width: 300px;
+    max-width: 300px;
+    font-size: 23px;
+    line-height: 1.18;
+  }
+
+  .closing__thesis {
+    width: min(640px, calc(100vw - 64px));
+  }
+
+  .closing__thesis-line--1 {
+    font-size: 46px;
+  }
+
+  .closing__thesis-line--2 {
+    font-size: 34px;
+  }
+}
+
+@media (min-width: 1101px) and (max-height: 850px) {
+  .grid-engine {
+    grid-template-columns: 770px 240px;
+  }
+
+  .grid-engine__canvas-shell,
+  .grid-engine__canvas {
+    width: 770px;
+    height: auto;
+  }
+}
+
+@media (max-width: 1100px) and (max-height: 800px) {
+  .grid-engine__canvas-shell,
+  .grid-engine__canvas {
+    width: min(100%, 680px);
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1100px) {
+  .motifs {
+    --motif-image-size: 144px;
+  }
+
+  .grid-engine__readout {
+    gap: 14px;
+    padding: 8px 10px 10px;
+    font-size: 9px;
+    line-height: 1.24;
+  }
+
+  .grid-engine__heading {
+    margin: 0 0 12px;
+    font-size: 36px;
+  }
+
+  .grid-engine__instruction {
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+
+  .grid-engine__swatches {
+    /* Reserves a counter-safe gap: at this breakpoint the global
+       stitch counter sweeps roughly 451-564px down the viewport while
+       Grid is in view, so the rail's lower controls are pushed below
+       that band instead of overlapping it. */
+    margin-bottom: 165px;
+  }
+
+  .grid-engine__button {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero__title {
+    right: 24px;
+    bottom: 90px;
+    left: 24px;
+    width: auto;
+  }
+
+  .hero__correction,
+  .nilgiris__copy {
+    right: 24px;
+    left: 24px;
+    width: auto;
+  }
+
+  .about {
+    display: block;
+    padding: 96px 24px 40px;
+  }
+
+  .about__copy {
+    width: 100%;
+  }
+
+  .about__plates {
+    display: none;
+  }
+
+  .construction__cloth {
+    width: calc(100vw - 48px);
+  }
+
+  .construction__header,
+  .construction__body {
+    left: 24px;
+    width: calc(100vw - 48px);
+  }
+
+  .construction__header {
+    top: 96px;
+  }
+
+  .construction__notes {
+    display: none;
+  }
+
+  .construction__pull {
+    right: 24px;
+    width: 45vw;
+  }
+
+  .motifs {
+    padding: 86px 24px 30px;
+  }
+
+  .motifs__intro {
+    display: block;
+  }
+
+  .motifs__heading {
+    text-align: left;
+  }
+
+  .motifs__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 14px;
+  }
+
+  .motifs__plate,
+  .motifs__image-shell {
+    width: 100%;
+  }
+
+  .motifs__image-shell {
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .artisans__header {
+    left: 24px;
+  }
+
+  .artisans__track {
+    width: calc(100vw - 48px);
+  }
+
+  .artisans__plate,
+  .artisans__image {
+    width: 100%;
+  }
+
+  .artisans__image {
+    height: 56vw;
+  }
+}
+
+@media (max-height: 950px) {
+  .about__paragraph {
+    margin: 0 0 0.8em;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  .about__paragraph:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 900px) and (max-height: 950px) {
+  .closing__credit-group {
+    margin-bottom: 9px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .closing__credit-group .type-label {
+    margin-bottom: 5px;
+    font-size: 11px;
+    line-height: 1.1;
+  }
+
+  .closing__credit-group p {
+    margin: 0 0 4px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1100px) {
+  .closing__credits {
+    /* Width and column-gap come from the shared 900-1199px gutter rule
+       above (48px each side); only vertical clearance is adjusted here
+       for this shorter/narrower range. */
+    padding-top: calc(var(--thread-nav-content-clearance, 76px) + 26px);
+    padding-bottom: 72px;
+    column-count: 3;
+  }
+
+  .closing__credit-group {
+    margin-bottom: 7px;
+  }
+
+  /* Forces SOURCES to always open the third column, so the shorter
+     TRANSLITERATION & REVIEW group that follows it stays clear of the
+     global stitch counter's lower-right sweep at this breakpoint. */
+  .closing__credit-group--column-start {
+    break-before: column;
+  }
+}
+
+@media (min-width: 900px) and (max-height: 850px) {
+  .about__paragraph {
+    margin-bottom: 0.65em;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .about__paragraph:last-child {
+    margin-bottom: 0;
+  }
+
+  .about__eyebrow {
+    margin-bottom: 16px;
+  }
+
+  .about__heading {
+    margin-bottom: 20px;
+  }
+
+  .artisans__caption {
+    margin-top: 10px;
+  }
+
+  /* Shrinks the image (not the row count or gap) so both rows of the
+     six-card grid stay fully inside a short viewport instead of
+     clipping at the bottom, per the "reduce image size rather than
+     translating rows" rule. */
+  .motifs {
+    --motif-image-size: clamp(132px, 18vh, 204px);
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1100px) and (max-height: 850px) {
+  .about__paragraph {
+    margin-bottom: 0.5em;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  /* At short-viewport widths like 1024x768, the default 400px-tall image
+     plus its caption would not fit the measured presentation zone. */
+  .artisans__image {
+    height: 330px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drift-plate,
+  .artisans__image,
+  .motifs__image {
+    transition: none;
+  }
+
+  .hero__scroll-cue,
+  .hero__scroll-label {
+    opacity: 1 !important;
+  }
+
+  .hero__scroll-indicator {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+}
+
+.mobile-fallback {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: 24px;
+  background: var(--ink);
+  color: var(--cloth);
+}
+
+.mobile-fallback__image,
+.mobile-fallback__overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mobile-fallback__image {
+  display: block;
+  object-fit: cover;
+}
+
+.mobile-fallback__overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(21, 19, 19, 0.28),
+    rgba(21, 19, 19, 0.82)
+  );
+}
+
+.mobile-fallback__title,
+.mobile-fallback__message {
+  position: absolute;
+  z-index: 1;
+  right: 24px;
+  left: 24px;
+  margin: 0;
+}
+
+.mobile-fallback__title {
+  bottom: 96px;
+  font-family: var(--font-display);
+  font-weight: 300;
+}
+
+.mobile-fallback__title-line {
+  display: block;
+  white-space: nowrap;
+}
+
+.mobile-fallback__title-line--descriptor {
+  margin-bottom: 30px;
+  color: rgba(240, 232, 216, 0.82);
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+}
+
+.mobile-fallback__title-line--puhoor {
+  color: #c4122f;
+  font-size: clamp(46px, 13vw, 62px);
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+}
+
+.mobile-fallback__message {
+  bottom: 38px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.3;
+}
