@@ -2,7 +2,7 @@
 
 An interactive, scroll-driven exhibition about Toda embroidery, a hand-embroidery tradition of the Nilgiri hills. It follows the cloth from raw thread to finished band across eight chapters, and ends with a counted-stitch grid that visitors can draw on themselves.
 
-**Live site:** https://toda-embroidery-side-we-misread.vercel.app/
+**Live site:** https://puhoor-toda-embroidery.vercel.app/
 
 ![The exhibition: thread close-up, the counted grid and the gift packaging](docs/preview.jpg)
 
