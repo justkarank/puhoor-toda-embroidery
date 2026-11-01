@@ -16,3 +16,5 @@ audit/**/*.jpg
 audit/**/*.jpeg
 audit/**/*.webp
 audit/deployment/
+.vercel
+.env*
